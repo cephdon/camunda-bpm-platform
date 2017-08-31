@@ -12,8 +12,6 @@
  */
 package org.camunda.bpm.engine.impl.bpmn.parser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.camunda.bpm.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
@@ -25,6 +23,7 @@ import org.camunda.bpm.engine.impl.el.Expression;
 import org.camunda.bpm.engine.impl.el.ExpressionManager;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
+import org.camunda.bpm.engine.impl.util.ParseUtil;
 import org.camunda.bpm.engine.impl.util.xml.Element;
 import org.camunda.bpm.engine.impl.util.xml.Namespace;
 
@@ -180,9 +179,9 @@ public class DefaultFailedJobParseListener extends AbstractBpmnParseListener {
   private void setFailedJobIncrementalIntervals(ActivityImpl activity, Element extensionElements) {
     Element failedJobIncrementalIntervals = extensionElements.elementNS(BpmnParse.CAMUNDA_BPMN_EXTENSIONS_NS, FAILED_JOB_INCREMENTAL_INTERVALS);
     if (failedJobIncrementalIntervals != null) {
-      String value = failedJobIncrementalIntervals.getText();
-      List<String> intervals = new ArrayList<String>(Arrays.asList(value.trim().split("\\s*,\\s*")));
-      activity.getProperties().set(FAILED_JOB_INTERVALS, intervals);
+      String intervalsString = failedJobIncrementalIntervals.getText();
+      List<String> parsedIntervals = ParseUtil.parseRetryIntervals(intervalsString);
+      activity.getProperties().set(FAILED_JOB_INTERVALS, parsedIntervals);
     }
   }
 

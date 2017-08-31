@@ -84,15 +84,15 @@ public class DefaultJobRetryCmd extends JobRetryCmd {
 
   protected void executeCustomStrategy(CommandContext commandContext, JobEntity job, ActivityImpl activity, String globalFailedJobRetryTimeCycle) throws Exception {
     String failedJobRetryTimeCycle = null;
-    List<String> incrementalIntervals = null;
+    List<String> retryIntervals = null;
     if (activity != null) {
       failedJobRetryTimeCycle = getFailedJobRetryTimeCycle(job, activity);
-      incrementalIntervals = getIncrementalIntervals(activity);
+      retryIntervals = getRetryIntervals(activity);
     }
 
     if (failedJobRetryTimeCycle == null && globalFailedJobRetryTimeCycle != null) {
       failedJobRetryTimeCycle = globalFailedJobRetryTimeCycle;
-      incrementalIntervals = commandContext.getProcessEngineConfiguration().getParsedIncrementalIntervals();
+      retryIntervals = commandContext.getProcessEngineConfiguration().getParsedRetryIntervals();
     }
 
     if (failedJobRetryTimeCycle == null) {
@@ -101,7 +101,7 @@ public class DefaultJobRetryCmd extends JobRetryCmd {
     } else {
       DurationHelper durationHelper = getDurationHelper(failedJobRetryTimeCycle);
 
-      setLockExpirationTime(job, incrementalIntervals, durationHelper);
+      setLockExpirationTime(job, retryIntervals, durationHelper);
 
       if (isFirstJobExecution(job)) {
         // then change default retries to the ones configured
@@ -175,7 +175,7 @@ public class DefaultJobRetryCmd extends JobRetryCmd {
 
   }
 
-  protected List<String> getIncrementalIntervals(ActivityImpl activity) {
+  protected List<String> getRetryIntervals(ActivityImpl activity) {
     return activity.getProperties().get(DefaultFailedJobParseListener.FAILED_JOB_INTERVALS);
   }
 
@@ -183,16 +183,16 @@ public class DefaultJobRetryCmd extends JobRetryCmd {
     return new DurationHelper(failedJobRetryTimeCycle);
   }
 
-  protected void setLockExpirationTime(JobEntity job, List<String> incrementalIntervals, DurationHelper durationHelper) {
-    if (incrementalIntervals == null || incrementalIntervals.isEmpty() || isFirstJobExecution(job)) {
+  protected void setLockExpirationTime(JobEntity job, List<String> retryIntervals, DurationHelper durationHelper) {
+    if (retryIntervals == null || retryIntervals.isEmpty() || isFirstJobExecution(job)) {
       job.setLockExpirationTime(durationHelper.getDateAfter());
     } else {
       int i = durationHelper.getTimes() - job.getRetries();
       String period = null;
-      if ((i - 1) < incrementalIntervals.size()) {
-        period = incrementalIntervals.get(i - 1);
+      if ((i - 1) < retryIntervals.size()) {
+        period = retryIntervals.get(i - 1);
       } else {
-        period = incrementalIntervals.get(incrementalIntervals.size() - 1);
+        period = retryIntervals.get(retryIntervals.size() - 1);
       }
       job.setLockExpirationTime(durationHelper.withPeriod(period).getDateAfterRepeat(ClockUtil.getCurrentTime()));
     }

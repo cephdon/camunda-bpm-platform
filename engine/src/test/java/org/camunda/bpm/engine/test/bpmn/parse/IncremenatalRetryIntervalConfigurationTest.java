@@ -51,7 +51,7 @@ public class IncremenatalRetryIntervalConfigurationTest {
   public ProcessEngineBootstrapRule bootstrapRule = new ProcessEngineBootstrapRule() {
     public ProcessEngineConfiguration configureEngine(ProcessEngineConfigurationImpl configuration) {
       configuration.setFailedJobRetryTimeCycle("R6/PT5M");
-      configuration.setIncrementalIntervals("PT20M, PT3M");
+      configuration.setFailedJobRetryIntervals("PT20M, PT3M");
       return configuration;
     }
   };
