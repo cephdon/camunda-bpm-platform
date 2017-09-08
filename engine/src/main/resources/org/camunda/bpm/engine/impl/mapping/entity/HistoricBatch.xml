@@ -176,6 +176,7 @@
     SELECT ${distinct} RES.*
     ${limitBetween}
     <include refid="selectFinishedBatchesReportEntitiesSql"/>
+    ${orderBy}
     ${limitAfter}
   </select>
 
@@ -209,9 +210,10 @@
   <select id="selectOnlyFinishedBatchesReportEntities" resultMap="finishedReportResultMap">
     <include refid="org.camunda.bpm.engine.impl.persistence.entity.Commons.bindOrderBy" />
     ${limitBefore}
-    SELECT FINISHED_, TYPE_
+    SELECT COUNT(TYPE_) AS FINISHED_, TYPE_
     ${limitBetween}
     <include refid="selectOnlyFinishedBatchesReportEntitiesSql" />
+    ${orderBy}
     ${limitAfter}
   </select>
 
@@ -221,12 +223,9 @@
   </select>
 
   <sql id="selectOnlyFinishedBatchesReportEntitiesSql">
-    FROM (
-      SELECT COUNT(*) AS FINISHED_, TYPE_
-      FROM ${prefix}ACT_HI_BATCH RES
-      WHERE END_TIME_ is not null
-      GROUP BY TYPE_
-    ) RES
+    FROM ${prefix}ACT_HI_BATCH RES
+    WHERE END_TIME_ is not null
+    GROUP BY TYPE_
   </sql>
 
 </mapper>
